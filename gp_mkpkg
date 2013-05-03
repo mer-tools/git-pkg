@@ -28,7 +28,6 @@ pkg_branch="pkg-%s" % vendor
 # Allow overriding of "git' command via the "GIT" environment variable
 GIT_CMD = os.environ.get('GIT', 'git')
 
-
 # Data passing class
 class Patches():
     def __init__(self):
@@ -41,7 +40,13 @@ class UnknownFormat(Exception):
 
 def git(*args, **kwargs):
     """Run git with arguments, return stdout as string"""
-    return subprocess.check_output([GIT_CMD] + list(args), **kwargs)
+    try:
+	return subprocess.check_output([GIT_CMD] + list(args), **kwargs)
+    except:
+	# Git cmd call failed, lets return empty as this function is 
+	# expected to return string/text.
+	# TODO: How to handle this better?
+	return ""
 
 def fail(msg, *args):
     """Report an error message and exit with failure"""
@@ -78,7 +83,6 @@ def guess_format(archive):
 
 def count_commits(a, b):
     return len(git('rev-list', '..'.join((a, b)), '--').splitlines())
-
 
 def prepare_tarball_and_patches(args):
     p = Patches()
