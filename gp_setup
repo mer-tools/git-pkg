@@ -49,7 +49,7 @@ unpack_tarball() {
 
 usage_existing() {
 cat <<EOF
-    --auto [--pristine] --base-on=<tag>|--unpack-to=<tag>
+    --auto [--pristine] [--base-on=<tag>]
            --pkgdir=<packaging dir> [--patch-branch=<branch/tag>]
            [--ver=<ver>[-<rel>]]
 
@@ -68,13 +68,6 @@ cat <<EOF
                    If --pristine is used then it looks in <packaging
                    dir> for a tarball and uses that as the basis for
                    the build.
-
-       --unpack-to=<basetag>
-                  Uses an empty git (implies --pristine); looks in
-                  <packaging dir> for a tarball and uses that as the
-                  basis for the build.  Unpacks the tarball as an
-                  initial commit and applies the given tag to the
-                  unpacked tarball.
 
        --ver=<ver>[-<rel>]
                   If the upstream <basetag> is not the X.Y.Z version
@@ -115,7 +108,6 @@ EOF
 use_existing() {
 
     gp_type="git"
-    unpack=
     FUZZ="--fuzz=2"
     # better option parsing welcomed
 
@@ -127,11 +119,6 @@ use_existing() {
 	    --base-on* )
 		basetag=${1#*=}
 		# if tag is empty, complain
-		shift ;;
-	    --unpack-to=* )
-		# Would be nice to default to tag=version
-		unpack=true
-		basetag=${1#*=}
 		shift ;;
 	    --pkgdir=* )
 		pkgdir=${1#*=}
@@ -159,7 +146,7 @@ use_existing() {
 
     if [[ -z "$ver" ]]; then 
 	# If version is not found one must define base tag.
-	[[ $basetag ]] || { fatal "basetag not supplied. You must use either --base-on= or --unpack-to= "; }
+	[[ $basetag ]] || { fatal "Could not determine basetag. You must use --base-on= to provide basetag."; }
     else
 	# When version is found and basetag is not set set version to basetag
 	if [[ -z "$basetag" ]]; then
@@ -217,13 +204,10 @@ use_existing() {
 
     # Guess the tarball
     tarball=$(cd $pkgdir; find * -name '*t*bz2' -o -name '*t*gz' -o -name '*t*xz')
-    tarball=${tarball:-$name.tar.bz2}
-    log "Using tarball: $tarball"
 
-    # If this is an unpack then it is pristine-tar with no
-    # git tree so unpack the tarball as a starting point
-    if [[ $unpack ]] ; then
-	echo "Unpack so setting pristine-tar : Unpacking tarball as initial commit"
+    # If there is tarball lets make it the base of our source tree
+    if [[ -n $tarball ]] ; then
+	log "Unpack so setting pristine-tar: Unpacking tarball as initial commit"
 	gp_type="pristine-tar"
 	unpack_tarball $pkgdir/$tarball
 	git add .
@@ -231,6 +215,9 @@ use_existing() {
 	# Create a tag for the tarball - it's OK to do it now in unpack mode
 	git_tag_cleanly $basetag
     fi
+
+    tarball=${tarball:-$name.tar.bz2}
+    log "Using tarball: $tarball"
 
     # Branch from the appropriate tag
     git checkout -q -f $basetag
