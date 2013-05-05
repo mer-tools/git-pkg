@@ -56,84 +56,70 @@ EOF
 
 usage() {
     cat <<EOF
-    $ME [--rel[=<version-release>]] [--ver=<tag>] [--edit] [--git-dir=<path>]
-
+Usage: $ME [--rel[=<version-release>]] [--ver=<tag>] [--edit] [--git-dir=<path>]
  
-       Used to create a new release or prepare for an intermediate
-       build. It is used to update the packaging by modifying the
-       _src, .changes, .yaml and .spec files.
-       Version: and Release: values and patch lines will be updated in
-       the yaml/spec. A changelog entry is prompted for (using git log
-       as a base) and the git repo will be tagged.
+  Used to create a new release or prepare for an intermediate build. It updates 
+  the packaging by modifying the _src, .changes, .yaml and .spec files.
+  
+  Version: and Release: values and patch lines will be updated in the yaml/spec. 
+  A changelog entry is prompted for (using git log as a base) and the git repo 
+  will be tagged.
 
-       Normal usage is to update git; possibly to a new upstream or
-       local release point, apply or rebase any patches and run as
-       $ME --ver/--rel
+  Normal usage is to update git; possibly to a new upstream or local release 
+  point, apply or rebase any patches and run as '$ME --ver/--rel'
 
-       An alternative use is to *not* specify --ver or --rel but to
-       use --git-dir; this will create a ready-to-build set of
-       patches/tarballs (FIXME: it has the unwanted side-effect of
-       changing the checkout state of <path>)
+  An alternative use is to *not* specify --ver or --rel but to use --git-dir; 
+  this will create a ready-to-build set of patches/tarballs.
+  (FIXME: it has the unwanted side-effect of changing the checkout state of <path>)
 
-       --rel is used to create a new incremental release of a package
-       when all that is changed is a patch to upstream code or
-       packaging. It does not change the 'version' of a package or the
-       main tag the package is built from.
+  --rel[=<version-release>]
 
-       --ver is used to create a new version of a package. Usually
-       this means that the <release> value is '1'. Usually this means
-       there is a new upstream code/tag. If the upstream tag is not a
-       simple version (eg it has text or underscores: 'vX_Y_Z') then
-       the extended form of the --rel arg can be used to override the
-       <version> and <release> values.
+    The --rel option is used to create incremental release of the package. It is
+    used when all that is changed is a patch added to $DISTRO-master or changes 
+    to packaging at pkg-$DISTRO are made.
 
+    If <version-release> is not specified then it is guessed from the packaging
+    and uses perls string increment on <release>. 
 
-       --rel[=<version-release>]
+    HEAD when the command is run will be tagged as $DISTRO-<version-release> 
+    and packaging as pkg-$DISTRO-<version-release>. (Usually git checkout -f
+    $DISTRO-master would be run before running $ME --rel)
 
-         If --rel is used then a new package release will be created.
+  --ver=<basetag>
 
-         If <version-release> is not specified then it is guessed from
-         the packaging and uses perls string increment on
-         <release>. This often works :)
+    --ver is used to create a new version of a package. Usually this means that
+    the <release> value is '1'. Usually this means there is a new upstream code/tag. 
+    If the upstream tag is not a simple version (eg it has text or underscores: 'vX_Y_Z') 
+    then the extended form of the --rel arg can be used to override the
+    <version> and <release> values.
 
-         HEAD when the command is run will be tagged as
-         $DISTRO-<version-release> and packaging as
-         pkg-$DISTRO-<version-release>. (Usually git checkout -f
-         master would be run before running $ME --rel)
+    If --ver is provided then it identifies the new base tag from which patches are
+    based and from where the tarball is built. If --rel=<version>-<release> is
+    not given then <version> is assumed to be <basetag> and <release> is assumed 
+    to be "1". A $DISTRO-master branch will be made if not present. This is used 
+    for a new upstream release.
 
-       --ver=<basetag>
+  --edit
 
-         If --ver is provided then it identifies the new base tag from
-         which patches are based and from where the tarball is
-         built. If --rel=<version>-<release> is not given then
-         <version> is assumed to be <basetag> and <release> is assumed to
-         be "1". A $DISTRO-master branch will be made if not present.
-         This is used for a new upstream release.
+    If --edit is provided then the final commit/tag step on the packaging branch
+    is not made so that the spec/yaml can be edited manually. The commit/tag 
+    commands are printed for reference.
 
-       --edit
+    If --rel is not given then the packaging branch pkg-$DISTRO is checked out, 
+    the spec/yaml is updated by appending .gitcount.sha1 to the Release: value 
+    (this tries to ensure rpm release values increment in a manner that allow 
+    rpm upgrades to work).
+    ADDITIONALLY: a normal gp_mkpkg is used to prepare the tarball
+    and patches when --rel is not given.
 
-         If --edit is provided then the final commit/tag step on the
-         packaging branch is not made so that the spec/yaml can be
-         edited manually. The commit/tag commands are printed for
-         reference.
+  --git-dir=<dir>
+ 
+    The --git-dir option is ideal for working with a local OBS checkout and doing
+    local OBS builds. It makes most sense when --rel is not specified
+    Internally it sets GIT_DIR to <dir> and GIT_WORK_TREE to cwd
 
-       If --rel is not given then the packaging branch pkg-$DISTRO is
-       checked out, the spec/yaml is updated by appending
-       .gitcount.sha1 to the Release: value (this tries to ensure rpm
-       release values increment in a manner that allow rpm upgrades to
-       work).
-       ADDITIONALLY: a normal gp_mkpkg is used to prepare the tarball
-       and patches when --rel is not given.
-
-       --git-dir=<dir>
-         The --git-dir option is ideal for working with a local OBS
-         checkout and doing local OBS builds. It makes most sense when
-         --rel is not specified
-         Internally it sets GIT_DIR to <dir> and GIT_WORK_TREE to cwd
-
-       $DISTRO is set either in ~/.gitpkg, the GITPKG_DISTRO
-       environment variable or using --distro=<DISTRO>. If not
-       specified 'mer' is used.
+    $DISTRO is set either in ~/.gitpkg, the GITPKG_DISTRO environment variable 
+    or using --distro=<DISTRO>. If not specified 'mer' is used.
 
 EOF
 }
