@@ -11,18 +11,14 @@ trap cleanup EXIT
 
 usage() {
     cat <<EOF
-    gp_setup --manual [--distro=<DISTRO>] \
-             [--pkgdir=<packaging dir>]
-    gp_setup --existing --base-on=<tag>|--unpack=<tag> \
-             --pkgdir=<packaging dir> \
-             [--patch-branch=<branch/tag>]  [--pristine] \
-             [--distro=<DISTRO>]
+gp_setup --manual [--distro=<DISTRO>] [--pkgdir=<packaging dir>]
+gp_setup --existing --base-on=<tag>|--unpack=<tag> --pkgdir=<packaging dir>
+         [--patch-branch=<branch/tag>] [--pristine] [--distro=<DISTRO>]
 
-       Used to setup an existing git repo for git-pkg
+  Used to setup an existing git repo for git-pkg
 
-       $DISTRO is set either in ~/.gitpkg, the GITPKG_DISTRO
-       environment variable or using --distro=<DISTRO>. If not
-       specified 'mer' is used.
+  $DISTRO is set either in ~/.gitpkg, the GITPKG_DISTRO environment variable 
+  or using --distro=<DISTRO>. If not specified 'mer' is used.
 
 EOF
     # keep the usage msg near the code:
@@ -49,58 +45,50 @@ unpack_tarball() {
 
 usage_existing() {
 cat <<EOF
-    --auto [--pristine] [--base-on=<tag>]
-           --pkgdir=<packaging dir> [--patch-branch=<branch/tag>]
-           [--ver=<ver>[-<rel>]]
 
-       Takes an existing set of packaging and applies it to some git repo.
-       This can be used in 3 ways:
-         1) with an upstream git and some packaging/patches
-         2) with an upstream tarball and some packaging/patches
-         3) with an upstream git, an upstream tarball and some packaging/patches
-            (eg where upstream does some post-processing after a git
-            checkout)
+  --auto [--pristine] [--base-on=<tag>] --pkgdir=<packaging dir> 
+         [--patch-branch=<branch/tag>] [--ver=<ver>[-<rel>]]
 
-       --base-on=<basetag>
-                   The existing tag to base the packaging on.
-                   Typically the upstream release tag.
+      Takes an existing set of packaging and applies it to some git repo.
+      This can be used in 3 ways:
+        1) with an upstream git and some packaging/patches
+        2) with an upstream tarball and some packaging/patches
+        3) with an upstream git, an upstream tarball and some packaging/patches
+           (eg where upstream does some post-processing after a git
+           checkout)
 
-                   If --pristine is used then it looks in <packaging
-                   dir> for a tarball and uses that as the basis for
-                   the build.
+    --base-on=<basetag>
+      The existing tag to base the packaging on.
+      Typically the upstream release tag.
 
-       --ver=<ver>[-<rel>]
-                  If the upstream <basetag> is not the X.Y.Z version
-                  then specify the version and optionally the release.
-                  (Could come from spec/.changes?)
+      If --pristine is used then it looks in <packaging dir> for a tarball and 
+      uses that as the basis for the build.
 
-       --pkgdir=<packaging dir>
-                  is the source dir for the spec/yaml/changes/patches
-                  This could be a 'checked out' osc dir.
-                  Any patches mentioned in the spec file and found in
-                  pkgdir are applied at <tag> in the order they appear
-                  in the spec file.
+    --ver=<ver>[-<rel>]
+      If the upstream <basetag> is not the X.Y.Z version then specify the version
+      and optionally the release. (Could come from spec/.changes?)
 
-       --fuzz=<fuzz>
-                  Can be useful if the patches found in pkgdir don't
-                  apply cleanly.
+    --pkgdir=<packaging dir>
+      is the source dir for the spec/yaml/changes/patches. This could be a 
+      'checked out' osc dir.
+      Any patches mentioned in the spec file and found in pkgdir are applied at
+      <tag> in the order they appear in the spec file.
 
-       --use-all-packaging
-                  Use this flag if pkgdir has been carefully prepared
-                  to remove unwanted patches and tarballs but still
-                  contains .gz / .bz2 / .xz files which would
-                  otherwise be discarded
+    --fuzz=<fuzz>
+      Can be useful if the patches found in pkgdir don't apply cleanly.
 
-       --pristine This allows an upstream git tree to be used in
-                  conjunction with pristine-tar. It is useful when
-                  upstream modify the source which is tagged in
-                  git. Upstream modifications are preserved as an
-                  initial commit which ensures that when mer-master is
-                  checked-out it contains the same information as the
-                  pristine tarball. For build purposes the actual
-                  pristine tarball is used together with any
-                  patches. Typically use with --base-on to specify a
-                  suitable tag.
+    --use-all-packaging
+      Use this flag if pkgdir has been carefully prepared to remove unwanted 
+      patches and tarballs but still contains .gz / .bz2 / .xz files which 
+      would otherwise be discarded
+
+    --pristine This allows an upstream git tree to be used in conjunction
+      with pristine-tar. It is useful when upstream modify the source which
+      is tagged in git. Upstream modifications are preserved as an initial 
+      commit which ensures that when mer-master is checked-out it contains
+      the same information as the pristine tarball. For build purposes the actual
+      pristine tarball is used together with any patches. Typically use with 
+      --base-on to specify a suitable tag.
 
 EOF
 }
@@ -322,30 +310,26 @@ use_existing() {
 usage_pkg(){
 cat <<EOF
 
-   The --manual mode is used for 'manual' setup.
+  The --manual mode is used for 'manual' setup.
 
-   This gives a chance to modify the packaging before doing a commit.
-
-    --manual
-       Used in an existing git repo this creates a pkg branch
-       called pkg-$DISTRO with a suitable .gitignore and a _src
-       file.
-       The user must then add packaging files to this branch and
-       manually create tags.
-
-       [--pkgdir=<packaging dir>]
-          If provided then any files in this source dir are copied
-          into the current dir ready for adding to the packaging
-          branch.
-
-          This could be a 'checked out' osc dir.
-
-          Also tries to find the Version:/Release: information from
-          any yaml/spec
+  This gives a chance to modify the packaging before doing a commit.
 
 
-       [--ver=<ver>-<rel>]
-          Allow version and release to be overriden
+  --manual
+    Used in an existing git repo this creates a pkg branch called pkg-$DISTRO
+    with a suitable .gitignore and a _src file. The user must then add 
+    packaging files to this branch and manually create tags.
+
+   [--pkgdir=<packaging dir>]
+      If provided then any files in this source dir are copied into the current
+      dir ready for adding to the packaging branch.
+
+      This could be a 'checked out' osc dir.
+
+      Also tries to find the Version:/Release: information from any yaml/spec
+
+   [--ver=<ver>-<rel>]
+      Allow version and release to be overriden
 
 EOF
 }
