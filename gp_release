@@ -18,8 +18,13 @@ update_changes(){ # release oldpatchtag patchtag
     cat <<EOF >> $newchanges
 - Please enter a changelog message
 
-#### Relevant gitlog. This line and lines up to the next changelog entry will be removed.
+#### Begin gitlog summary. This line and lines up to the next changelog entry will be removed.
+# The following lines contain a [summary] entry.
 EOF
+    git log $tag1..$tag2 -- | egrep "^[[:space:]]*\[.*\]" | sed 's/\s*\(.*\)/- \1/' >> $newchanges
+    echo >> $newchanges
+    echo "#### Begin gitlog raw. This line and lines up to the next changelog entry will be removed.." >> $newchanges
+    echo >> $newchanges
     git log $tag1..$tag2 -- >> $newchanges
     echo "#### this line will be removed" >> $newchanges
     cat *.changes 2>/dev/null >> $newchanges
@@ -30,7 +35,7 @@ EOF
 	fatal "No changes entered, aborting"
     fi
 
-    sed -i '/^#### Relevant gitlog/,/^#### this line will/d' $newchanges
+    sed -i '/^#### Begin gitlog/,/^#### this line will/d' $newchanges
     mv $newchanges $changes || fatal "Can't update changes file"
     # Tidy up emacs backup and old files
     rm -f $newchanges.pre-edit $newchanges~
