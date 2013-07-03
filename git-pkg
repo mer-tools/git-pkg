@@ -3,7 +3,7 @@
 . ${GP_LIB:=/usr/share/gitpkg}/gp_common
 
 if [[ -d $pkg_dir ]]; then
-    if ! [[ -L $pkg_dir/main_git_repo ]]; then
+    if ! [[ -L $pkg_dir/.git/main_git_repo ]]; then
 	fatal "This is not a git-pkg setup. $pkg_dir exists but is not a packaging tracking dir."
     fi
     case $1 in 
