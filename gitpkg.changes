@@ -1,3 +1,7 @@
+* Wed Jul 03 2013 David Greaves <david@dgreaves.com> - 0.1.3-1
+- [gp_release] PKG_DIR and PKG_FILE can specify rpm/ dir and which .spec/yaml to use.
+- [gp_release] Support the [summary] format in git log
+
 * Fri Jun 14 2013 David Greaves <david@dgreaves.com> - 0.1.2-1
 - Create $DISTRO-master if it doesn't exist
 - Automatically tag --ver if it doesn't exist
