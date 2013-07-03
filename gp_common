@@ -17,7 +17,8 @@ log(){
 
 get_pkgfile(){
     # Find the yaml or spec (or abort)
-    pkgfile=$(find $pkg_dir -maxdepth 1 -name '*yaml' -print -quit)
+    # Use the environment PKG_FILE if provided
+    pkgfile=${PKG_FILE:-$(find $pkg_dir -maxdepth 1 -name '*yaml' -print -quit)}
     if [[ ! $pkgfile ]]; then
 	pkgfile=$(find $pkg_dir -maxdepth 1 -name '*spec' -print -quit)
     fi

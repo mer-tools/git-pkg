@@ -11,8 +11,7 @@ update_changes(){ # release oldpatchtag patchtag
     release=$1
     tag1=$2
     tag2=$3
-    changes=$(find . -maxdepth 1 -name '*changes' -print -quit)
-    changes=${changes:-$pkgname.changes}
+    changes=${name}.changes
     newchanges=$(mktemp changes_XXXXX)
     date +"* %a %b %d %Y ${GIT_AUTHOR_NAME:-Your Name (Set \$GIT_AUTHOR_NAME)} <${GIT_AUTHOR_EMAIL:-Your Email Set \$GIT_AUTHOR_EMAIL}> - $release" > $newchanges
     cat <<EOF >> $newchanges
@@ -27,11 +26,11 @@ EOF
     echo >> $newchanges
     git log $tag1..$tag2 -- >> $newchanges
     echo "#### this line will be removed" >> $newchanges
-    cat *.changes 2>/dev/null >> $newchanges
+    cat $changes 2>/dev/null >> $newchanges
     cp $newchanges $newchanges.pre-edit
     ${EDITOR:-vi} $newchanges || fatal "EDITOR not set and vi not available"
     if diff --report-identical-files $newchanges $newchanges.pre-edit > /dev/null; then
-	rm -f $newchanges.pre-edit $newchanges~
+	rm -f $newchanges.pre-edit $newchanges~ $newchanges
 	fatal "No changes entered, aborting"
     fi
 
@@ -121,6 +120,9 @@ usage() {
        $DISTRO is set either in ~/.gitpkg, the GITPKG_DISTRO
        environment variable or using --distro=<DISTRO>. If not
        specified 'mer' is used.
+
+       If $PKG_DIR is set it is used instead of rpm/
+       If $PKG_FILE is set it is used instead of the first matching yaml/spec file
 
 EOF
 }
@@ -318,13 +320,13 @@ EOF
 	get_info_from_packaging
 	release="$ver-1.$gitcount.$sha1"
 	# Now add a dummy changelog entry
-	changes=$(find . -maxdepth 1 -name '*changes' -print -quit)
+	changes=${name}.changes
 	newchanges=$(mktemp changes_XXXXX)
 	date +"* %a %b %d %Y ${GIT_AUTHOR_NAME:-Your Name (Set \$GIT_AUTHOR_NAME)} <${GIT_AUTHOR_EMAIL:-Your Email Set \$GIT_AUTHOR_EMAIL}> - $release" > $newchanges
 	echo -e "- git commits from $oldpatchtag to $sha1" >> $newchanges
 	git log ${oldpatchtag}..$patchtag_sha1 --oneline -- | sed -e 's/^/   /' >> $newchanges
 	echo >> $newchanges
-	cat *.changes >> $newchanges
+	cat $changes >> $newchanges
 	mv $newchanges $changes || fatal "Can't update changes file"
 
         # All done, use gp_mkpkg to update patch lists in yaml/spec etc
