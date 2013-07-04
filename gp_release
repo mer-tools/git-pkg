@@ -266,9 +266,9 @@ do_release() {
 	tarball=$name-$ver.tar.gz
     fi
     if [[ $(git rev-parse $basetag 2>/dev/null) == $(git rev-parse $patchtag 2>/dev/null) ]]; then
-	echo ${type}:${tarball}:${basetag} > $pkg_dir/_src
+	srcfile="${type}:${tarball}:${basetag}"
     else
-	echo ${type}:${tarball}:${basetag}:${patchtag} > $pkg_dir/_src
+	srcfile="${type}:${tarball}:${basetag}:${patchtag}"
 	if ! git_branch_exists $DISTRO-master; then
 	    # There are patches so we make mer-master branch and point
 	    # it here
@@ -281,8 +281,6 @@ do_release() {
     # in the packaging
     if [[ $verrel ]]; then
 	cd $pkg_dir
-	sed -i -e"s/Version:.*/Version: $ver/" $pkgfile
-	sed -i -e"s/Release:.*/Release: $rel/" $pkgfile
 	# If this is a newver then it's a new upstream release: give a
 	# set of changes from one ver to the next
 	if [[ $newver ]]; then
@@ -290,6 +288,10 @@ do_release() {
 	else
 	    update_changes $verrel $oldpatchtag $patchtag_sha1
 	fi
+	# Now update spec/yaml and _src
+	echo $srcfile > _src
+	sed -i -e"s/Version:.*/Version: $ver/" $pkgfile
+	sed -i -e"s/Release:.*/Release: $rel/" $pkgfile
 
         # All done, use gp_mkpkg to update patch lists in yaml/spec etc
 	gp_mkpkg --no-tarball --no-checkout $_MKPKG_OPTS
@@ -312,6 +314,7 @@ EOF
 	    git_tag_cleanly pkg-$patchtag
 	fi
     else
+	echo $srcfile > $pkg_dir/_src
 	sha1=$(git rev-parse --short $patchtag_sha1)
 	gitcount=$(count_commits ${basetag} ${patchtag})
 	cd $pkg_dir
