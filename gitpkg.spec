@@ -23,7 +23,6 @@ Source100:  gitpkg.yaml
 Requires:   git
 Requires:   pristine-tar
 Requires:   python-yaml
-Requires:   spectacle
 Requires:   grep
 Requires:   coreutils
 Requires:   findutils
